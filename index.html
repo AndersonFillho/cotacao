@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversor de Moedas</title>
+    <style>
+        /* Estilização do select */
+        select {
+            width: 100%;
+            background: none;
+            color: white;
+            border: none;
+            padding: 0 35px 0 0;
+            appearance: none;
+            font-size: 24px;
+        }
+
+        select:focus {
+            background: #014ba0;
+            outline: none;
+            border-bottom: 1px solid;
+        }
+
+        /* Estilização das options */
+        select option {
+            background: black;
+            color: white;
+        }
+
+        .select-wrapper {
+            position: relative;
+            display: inline-block;
+            width: 200px;
+        }
+
+        .select-wrapper::before {
+            content: "▼";
+            position: absolute;
+            top: 50%;
+            right: 10px;
+            transform: translateY(-50%);
+            font-size: 15px;
+            pointer-events: none;
+            color: white;
+        }
+
+        .select-wrapper select {
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        body {
+            background-color: #282c34;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="select-wrapper">
+        <select id="moeda">
+            <option value="USD">Dólar Americano</option>
+            <option value="EUR">Euro</option>
+            <option value="CNY">Yuan</option>
+        </select>
+    </div>
+
+    <span id="moeda-selecionada">Selecione uma moeda</span>
+
+    <script>
+        // Seleciona o elemento select
+        var selectMoeda = document.getElementById("moeda");
+
+        // Seleciona o elemento onde o valor da moeda será exibido
+        var valorMoeda = document.getElementById("moeda-selecionada");
+
+        // Função para obter a cotação da moeda
+        async function obterCotacao(moeda) {
+            try {
+                let response = await fetch(`https://economia.awesomeapi.com.br/json/last/USD-BRL,EUR-BRL,CNY-BRL`);
+                let data = await response.json();
+                if (moeda === "USD") return data.USDBRL.bid;
+                if (moeda === "EUR") return data.EURBRL.bid;
+                if (moeda === "CNY") return data.CNYBRL.bid;
+            } catch (error) {
+                console.error('Erro ao obter cotação:', error);
+                return null;
+            }
+        }
+
+        // Função para atualizar o valor da moeda com base na seleção
+        async function atualizarValorMoeda() {
+            var moedaSelecionada = selectMoeda.value;
+            var cotacao = await obterCotacao(moedaSelecionada);
+
+            if (cotacao) {
+                valorMoeda.textContent = `R$ ${parseFloat(cotacao).toFixed(2)}`;
+            } else {
+                valorMoeda.textContent = 'Erro ao obter cotação';
+            }
+        }
+
+        // Adiciona um ouvinte de evento para detectar mudanças no select
+        selectMoeda.addEventListener("change", atualizarValorMoeda);
+
+        // Chama a função inicialmente para exibir o valor padrão
+        atualizarValorMoeda();
+    </script>
+</body>
+
+</html>
